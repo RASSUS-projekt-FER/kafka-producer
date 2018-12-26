@@ -1,4 +1,4 @@
-package rassus.projekt.kafka.model;
+package rassus.projekt.kafka.util;
 
 /**
  * Ovo sučelje definira tvornicu mjerenja. Ideja je da implementacija sučelja
