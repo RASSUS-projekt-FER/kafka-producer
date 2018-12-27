@@ -1,5 +1,7 @@
 package rassus.projekt.kafka.util;
 
+import java.util.Objects;
+
 /**
  * Ovaj razred predstavlja konfiguraciju pojedinog uređaja. Sadrži parametre
  * pomoću kojih se generiraju metrike.
@@ -28,7 +30,7 @@ public class Config {
     /**
      * Prosječan broj poslanih tcp paketa za neki interval //TODO: deinirati interval
      */
-    private int tcpSent; //TODO: devijacije veza, generiranje veza?
+    private int tcpSent;
     /**
      * Prosječan broj primljenih tcp paketa za neki interval
      */
@@ -43,15 +45,30 @@ public class Config {
     private int udpReceived;
 
     public Config(String name, int avgCpu, int cpuSpike, int avgRam, int ramSpike, int tcpSent, int tcpReceived, int udpSent, int udpReceived) {
-        this.name = name;
-        this.avgCpu = avgCpu;
-        this.cpuSpike = cpuSpike;
-        this.avgRam = avgRam;
-        this.ramSpike = ramSpike;
-        this.tcpSent = tcpSent;
-        this.tcpReceived = tcpReceived;
-        this.udpSent = udpSent;
-        this.udpReceived = udpReceived;
+        this.name = Objects.requireNonNull(name);
+        this.avgCpu = checkPercentage(avgCpu);
+        this.cpuSpike = checkPercentage(cpuSpike);
+        this.avgRam = checkPercentage(avgRam);
+        this.ramSpike = checkPercentage(ramSpike);
+        this.tcpSent = checkCount(tcpSent);
+        this.tcpReceived = checkCount(tcpReceived);
+        this.udpSent = checkCount(udpSent);
+        this.udpReceived = checkCount(udpReceived);
+    }
+
+    private static int checkPercentage(int p) {
+        if (p < 0 || p > 100) {
+            throw new IllegalArgumentException("Postotak ne može biti manji od 0 ili veći od 100: " + p);
+        }
+        return p;
+    }
+
+    private static int checkCount(int c) {
+        if (c < 0) {
+            throw new IllegalArgumentException("Količina ne može biti manja od nula: " + c);
+        }
+
+        return c;
     }
 
     public String getName() {
