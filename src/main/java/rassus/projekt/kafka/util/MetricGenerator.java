@@ -59,5 +59,10 @@ public interface MetricGenerator {
      */
     int[] generateUDPTraffic(int deviceId);
 
+    /**
+     * @return number of registered  devices registered in a network
+     */
+    int getNumberOfNodes();
+
     //TODO: dopuniti
 }

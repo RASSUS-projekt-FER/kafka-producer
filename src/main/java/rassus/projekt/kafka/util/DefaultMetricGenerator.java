@@ -117,4 +117,9 @@ public class DefaultMetricGenerator implements MetricGenerator {
                 Math.toIntExact(round(RANDOM.nextGaussian() * rDeviation
                         + c.getUdpReceived()))}; //primljeni paketi
     }
+
+    @Override
+    public int getNumberOfNodes() {
+        return k == null ? 0 : k.size();
+    }
 }
