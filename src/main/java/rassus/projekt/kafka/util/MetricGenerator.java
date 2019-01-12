@@ -14,6 +14,8 @@ public interface MetricGenerator {
     int NO_CONFIG_PARAMETERS = 10;
     double PACKET_DEVIATION_FACTOR = 0.4;
 
+    String getDeviceName(int deviceId);
+
     /**
      * Vraća CPU usage
      *

@@ -1,12 +1,18 @@
-package rassus.projekt.kafka.model;
+package rassus.projekt.kafka;
 
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import rassus.projekt.kafka.util.DefaultMetricGenerator;
+import rassus.projekt.kafka.util.Metric;
 import rassus.projekt.kafka.util.MetricGenerator;
 
-import java.util.Arrays;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static rassus.projekt.kafka.util.Util.fillProperties;
 
 /**
  * Ovaj razred simulira uređaj u mreži. Pri pokretanju iz naredbenog retka uzima id iz liste argumenata
@@ -21,6 +27,7 @@ public class Device {
      * Vremenski interval nakon kojeg se generiraju nove metrike.
      */
     private static final long METRIC_INTERVAL_MILLIS = 5000;
+    private static final Properties PRODUCER_PROPERTIES = fillProperties();
     /**
      * Generator metrika
      */
@@ -103,12 +110,16 @@ public class Device {
         public void run() {
             //todo: metoda zasad samo ispisuje generirane metrike, ovdje treba slati na raspodijeljene teme u kafki
             System.out.println("Generiram podatke...");
-            System.out.println(String.format("cpu:%d,ram:%d,tcp:%s,udp:%s",
-                    generator.generateCPUUsage(id),
+            Metric metric = new Metric(generator.getDeviceName(id), generator.generateCPUUsage(id),
                     generator.generateMemoryUsage(id),
-                    Arrays.toString(generator.generateTCPTraffic(id)),
-                    Arrays.toString(generator.generateUDPTraffic(id))
-            ));
+                    generator.generateTCPTraffic(id),
+                    generator.generateUDPTraffic(id));
+            System.out.println(metric);
+
+            //todo ovo testirati
+            Producer<String, Integer> cpuProducer = new KafkaProducer<>(PRODUCER_PROPERTIES);
+            cpuProducer.send(new ProducerRecord<>("cpu", metric.getName(), metric.getCpu()));
+
         }
     }
 }

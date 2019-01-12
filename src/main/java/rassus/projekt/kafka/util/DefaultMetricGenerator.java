@@ -78,6 +78,11 @@ public class DefaultMetricGenerator implements MetricGenerator {
     }
 
     @Override
+    public String getDeviceName(int deviceId) {
+        return getConfigForId(deviceId).getName();
+    }
+
+    @Override
     public int generateCPUUsage(int deviceId) {
         Config c = getConfigForId(deviceId);
         return toIntExact(round(RANDOM.nextGaussian() * c.getCpuSpike() + c.getAvgCpu()));
