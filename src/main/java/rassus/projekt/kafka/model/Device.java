@@ -84,6 +84,8 @@ public class Device {
     private void run() {
         Scanner sc = new Scanner(System.in);
         metricTimer.scheduleAtFixedRate(new MetricTask(), METRIC_INTERVAL_MILLIS, METRIC_INTERVAL_MILLIS);
+//        Producer<Integer, Integer> p = new KafkaProducer(null);
+        //todo: u scheduled task poslati metrike na zasebne teme
         while (sc.hasNext()) {
             String cmd = sc.nextLine();
             if (cmd.toLowerCase().equals(SHUTDOWN_COMMAND)) {
