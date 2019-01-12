@@ -1,4 +1,7 @@
-package rassus.projekt.kafka.model;
+package rassus.projekt.kafka.util;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Ovo sučelje definira tvornicu mjerenja. Ideja je da implementacija sučelja
@@ -6,6 +9,10 @@ package rassus.projekt.kafka.model;
  * generira neki rezultat. Ovo je podložno provjerama naravno :)
  */
 public interface MetricGenerator {
+    Path CONFIG_PATH = Paths.get("src/main/resources/konfiguracija-mreze.txt");
+    String COMMENT_LINE = "#";
+    int NO_CONFIG_PARAMETERS = 10;
+    double PACKET_DEVIATION_FACTOR = 0.4;
 
     /**
      * Vraća CPU usage
@@ -25,14 +32,14 @@ public interface MetricGenerator {
      */
     int generateMemoryUsage(int deviceId);
 
-    /**
-     * Vraća broj aktivnih veza.
-     *
-     * @param deviceId id uređaja
-     *
-     * @return broj veza
-     */
-    int generateNoConnections(int deviceId);
+//    /**
+//     * Vraća broj aktivnih veza.
+//     *
+//     * @param deviceId id uređaja
+//     *
+//     * @return broj veza
+//     */
+//    int generateNoConnections(int deviceId);
 
     /**
      * vraća uređeni par (poslanih,primljenih) TCP paketa.
@@ -51,6 +58,11 @@ public interface MetricGenerator {
      * @return UDP poslano, primljeno
      */
     int[] generateUDPTraffic(int deviceId);
+
+    /**
+     * @return number of registered  devices registered in a network
+     */
+    int getNumberOfNodes();
 
     //TODO: dopuniti
 }
