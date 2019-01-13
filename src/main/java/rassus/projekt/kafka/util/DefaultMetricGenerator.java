@@ -1,5 +1,7 @@
 package rassus.projekt.kafka.util;
 
+import lombok.extern.log4j.Log4j2;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -13,15 +15,12 @@ import static java.lang.StrictMath.toIntExact;
  * Implementacija sučelja {@linkplain MetricGenerator}. Za generiranje nasumičnih vrijednosti
  * koristit će se normalna (Gaussova) razdioba i njena implementacija u {@link java.util.Random}.
  */
+@Log4j2
 public class DefaultMetricGenerator implements MetricGenerator {
-//    private static final Path CONFIG_PATH = Paths.get("src/main/resources/konfiguracija-mreze.txt");
-//    private static final String COMMENT_LINE = "#";
-//    private static final int NO_CONFIG_PARAMETERS = 10;
     /**
-     * Mapa koja sadrži konfiguracije svih postojećih uređaja
+     * Mapa koja sadrži konfiguracije svih postojećih uređaja.
      */
-    private static final Map<Integer, Config> k = fillMap(); //TODO: statička konfiguracija ili periodično čitanje
-    //odabrana statička konfiguracija
+    private static final Map<Integer, Config> configMap = fillMap();
     /**
      * {@link Random} objekt za nasumična mjerenja
      */
@@ -32,17 +31,17 @@ public class DefaultMetricGenerator implements MetricGenerator {
      */
     private static Map<Integer, Config> fillMap() {
         try {
-            Map<Integer, Config> m = new HashMap<>();
+            Map<Integer, Config> map = new HashMap<>();
             for (String line : Files.readAllLines(CONFIG_PATH)) {
                 if (line.isEmpty() || line.startsWith(COMMENT_LINE)) {
                     continue;
                 }
 
                 String[] fields = line.split(",");
-                if (fields.length != NO_CONFIG_PARAMETERS) {
-                    System.out.println("Redak: '" + line + "' nije ispravna formata");
+                if (fields.length != NUM_CONFIG_PARAMETERS) {
+                    log.error("Redak: '" + line + "' nije ispravnog formata");
                 } else {
-                    m.put(Integer.parseInt(fields[0]),
+                    map.put(Integer.parseInt(fields[0]),
                             new Config(fields[1],
                                     Integer.parseInt(fields[2]),
                                     Integer.parseInt(fields[3]),
@@ -55,9 +54,9 @@ public class DefaultMetricGenerator implements MetricGenerator {
                 }
             }
 
-            return m;
+            return map;
         } catch (IOException e) {
-            return null;
+            throw new RuntimeException("Nemoguće učitati konfiguracijsku datoteku", e);
         }
     }
 
@@ -65,11 +64,10 @@ public class DefaultMetricGenerator implements MetricGenerator {
      * Vraća {@link Config} objekt za primljeni id, ako postoji.
      *
      * @param deviceId id uređaja
-     *
      * @return Config uređaja
      */
     private static Config getConfigForId(int deviceId) {
-        Config c = k.get(deviceId); //nekako riješiti
+        Config c = configMap.get(deviceId);
         if (c == null) {
             throw new IllegalArgumentException("Uređaj s id: " + deviceId + " ne postoji...");
         }
@@ -93,11 +91,6 @@ public class DefaultMetricGenerator implements MetricGenerator {
         Config c = getConfigForId(deviceId);
         return toIntExact(round(RANDOM.nextGaussian() * c.getRamSpike() + c.getAvgRam()));
     }
-
-//    @Override
-//    public int generateNoConnections(int deviceId) {
-//        throw new UnsupportedOperationException();
-//    }
 
     @Override
     public int[] generateTCPTraffic(int deviceId) {
@@ -125,6 +118,6 @@ public class DefaultMetricGenerator implements MetricGenerator {
 
     @Override
     public int getNumberOfNodes() {
-        return k == null ? 0 : k.size();
+        return configMap.size();
     }
 }

@@ -11,11 +11,11 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
 
-import static rassus.projekt.kafka.util.Util.fillProperties;
+import static rassus.projekt.kafka.util.Util.getProperties;
 
 public class TestConsumer {
     public static void main(String[] args) {
-        Properties properties = fillProperties();
+        Properties properties = getProperties();
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "streams-gejo");
         properties.put("group.id", "testni-consumer");
         properties.put("key.deserializer", StringDeserializer.class.getName());
@@ -30,10 +30,8 @@ public class TestConsumer {
                         c.key() + ":" + c.value());
             }
         }
-        //tOdO SVE RADDIIIIIIIIIIII :)
 
         consumer.commitAsync();
         consumer.close();
-
     }
 }

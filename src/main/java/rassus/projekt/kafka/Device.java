@@ -1,5 +1,6 @@
 package rassus.projekt.kafka;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -10,16 +11,33 @@ import rassus.projekt.kafka.util.DefaultMetricGenerator;
 import rassus.projekt.kafka.util.Metric;
 import rassus.projekt.kafka.util.MetricGenerator;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 
-import static rassus.projekt.kafka.util.Util.*;
+import static rassus.projekt.kafka.util.Util.CPU_USAGE_TOPIC;
+import static rassus.projekt.kafka.util.Util.DEFAULT_PARTITIONS;
+import static rassus.projekt.kafka.util.Util.DEFAULT_REPLICATION_FACTOR;
+import static rassus.projekt.kafka.util.Util.KAFKA_TOPICS;
+import static rassus.projekt.kafka.util.Util.RAM_USAGE_TOPIC;
+import static rassus.projekt.kafka.util.Util.TCP_RECEIVED_TOPIC;
+import static rassus.projekt.kafka.util.Util.TCP_SENT_TOPIC;
+import static rassus.projekt.kafka.util.Util.UDP_RECEIVED_TOPIC;
+import static rassus.projekt.kafka.util.Util.UDP_SENT_TOPIC;
+import static rassus.projekt.kafka.util.Util.getProperties;
 
 /**
  * Ovaj razred simulira uređaj u mreži. Pri pokretanju iz naredbenog retka uzima id iz liste argumenata
  * i čita vlastitu konfiguraciju. Periodično generira mjerenja i šalje na Kafka klaster.
  */
+@Log4j2
 public class Device {
+
     /**
      * Naredba koju je potrebno upisati kako bi se emulator uređaja isključio.
      */
@@ -28,20 +46,24 @@ public class Device {
      * Vremenski interval nakon kojeg se generiraju nove metrike.
      */
     private static final long METRIC_INTERVAL_MILLIS = 5000;
-//    private static final Properties PRODUCER_PROPERTIES = fillProperties();
+
     /**
-     * Generator metrika
+     * Generator metrika.
      */
     private final MetricGenerator generator = new DefaultMetricGenerator();
+
     /**
-     * Id uređaja iz konfiguracije
+     * Id uređaja iz konfiguracije.
      */
     private int id;
     /**
-     * Timer za periodično generiranje metrika
+     * Timer za periodično generiranje metrika.
      */
     private Timer metricTimer = new Timer(true);
-    private boolean notTopics = true;
+    /**
+     * Indikator jesu li topicsi kreirani.
+     */
+    private boolean topicsCreated = false;
 
     /**
      * Konstruktor.
@@ -52,10 +74,11 @@ public class Device {
         if (id < 0) {
             throw new IllegalArgumentException("Neispravan id uređaja: " + id);
         }
-        this.id = id;
         if (id > generator.getNumberOfNodes()) {
             throw new IllegalArgumentException("Neispravan id uređaja: " + id);
         }
+
+        this.id = id;
     }
 
     /**
@@ -65,38 +88,45 @@ public class Device {
      */
     public static void main(String[] args) {
         if (args.length != 1) {
-            System.out.println("Korištenje: device <id-uređaja>");
+            log.warn("Korištenje: device <id-uređaja>");
             System.exit(1);
         }
-
 
         int id = 0;
         try {
             id = Integer.parseInt(args[0]);
             if (id < 1) {
-                System.out.println("id uređaja mora biti prirodan broj");
+                log.error("id uređaja mora biti prirodan broj");
                 System.exit(1);
             }
         } catch (NumberFormatException e) {
-            System.out.println("id uređaja mora biti prirodan broj");
+            log.error("id uređaja mora biti prirodan broj");
             System.exit(1);
         }
 
-        new Device(id).run();
+        Device device = new Device(id);
+        device.run();
 
-        System.out.println("Goodbye");
+    }
+
+    private void addShutdownHooks() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            metricTimer.cancel();
+            log.info("Goodbye");
+        }));
     }
 
     /**
      * Metoda emulira rad uređaja. Pokreće se Timer i "čeka" se naredba zaustavljanja.
      */
     private void run() {
+        addShutdownHooks();
+
         Scanner sc = new Scanner(System.in);
         metricTimer.scheduleAtFixedRate(new MetricTask(), METRIC_INTERVAL_MILLIS, METRIC_INTERVAL_MILLIS);
-        //todo: u scheduled task poslati metrike na zasebne teme
-        while (sc.hasNext()) {
+        while (sc.hasNextLine()) {
             String cmd = sc.nextLine();
-            if (cmd.toLowerCase().equals(SHUTDOWN_COMMAND)) {
+            if (cmd == null || cmd.equalsIgnoreCase(SHUTDOWN_COMMAND)) {
                 return;
             }
         }
@@ -109,13 +139,13 @@ public class Device {
 
         @Override
         public void run() {
-            System.out.println("Generiram podatke...");
+            log.info("Generiram podatke...");
             Metric metric = new Metric(generator.getDeviceName(id), generator.generateCPUUsage(id),
                     generator.generateMemoryUsage(id),
                     generator.generateTCPTraffic(id),
                     generator.generateUDPTraffic(id));
 
-            System.out.println(metric);
+            log.info(metric);
             try {
                 sendMetricToCluster(metric);
             } catch (ExecutionException | InterruptedException e) {
@@ -124,12 +154,11 @@ public class Device {
         }
 
         private void sendMetricToCluster(Metric metric) throws ExecutionException, InterruptedException {
-            //todo ovo testirati
             String name = metric.getName();
-            Properties properties = fillProperties();
+            Properties properties = getProperties();
             properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "streams-" + name);
 
-            if (notTopics) {
+            if (!topicsCreated) {
                 createTopics(properties);
             }
             Producer<String, Integer> producer = new KafkaProducer<>(properties);
@@ -141,7 +170,7 @@ public class Device {
             producer.send(new ProducerRecord<>(UDP_RECEIVED_TOPIC, name, metric.getUdpReceived()));
 
             producer.close();
-            System.out.println("Podaci poslani na klaster...");
+            log.info("Podaci poslani na klaster...");
         }
 
         private void createTopics(Properties properties) throws ExecutionException, InterruptedException {
@@ -157,7 +186,8 @@ public class Device {
             if (!newTopics.isEmpty()) {
                 client.createTopics(newTopics);
             }
-            notTopics = false;
+
+            topicsCreated = true;
         }
     }
 }

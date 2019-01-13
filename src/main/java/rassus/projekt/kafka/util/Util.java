@@ -26,23 +26,28 @@ public class Util {
     private static final String KAFKA_CLUSTER_ADDRESS = "localhost:9092";
     private static final String KAFKA_KEY_SERIALIZER_CONFIG = "key.serializer";
     private static final String KAFKA_VALUE_SERIALIZER_CONFIG = "value.serializer";
+    private static final Properties DEFAULT_PROPERTIES = createDefaultProperties();
 
     private static Set<String> createTopicSet() {
         return new HashSet<>(Arrays.asList(CPU_USAGE_TOPIC, RAM_USAGE_TOPIC, TCP_SENT_TOPIC, TCP_RECEIVED_TOPIC, UDP_SENT_TOPIC, UDP_RECEIVED_TOPIC));
     }
 
-    public static Properties fillProperties() {
+    public static Properties getProperties() {
+        Properties properties = new Properties();
+        properties.putAll(DEFAULT_PROPERTIES);
+        return properties;
+    }
+
+    private static Properties createDefaultProperties() {
         Properties properties = new Properties();
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER_ADDRESS);
-//        properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
-//        properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
         properties.put(KAFKA_KEY_SERIALIZER_CONFIG, StringSerializer.class.getName());
         properties.put(KAFKA_VALUE_SERIALIZER_CONFIG, IntegerSerializer.class.getName());
-
 
         return properties;
     }
 
+    @Deprecated
     static void startup(StreamsBuilder builder, Properties properties) throws InterruptedException {
         final Topology topology = builder.build();
         System.out.println(topology.describe());

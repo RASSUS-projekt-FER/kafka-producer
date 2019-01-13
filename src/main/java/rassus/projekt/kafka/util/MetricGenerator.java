@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 public interface MetricGenerator {
     Path CONFIG_PATH = Paths.get("src/main/resources/konfiguracija-mreze.txt");
     String COMMENT_LINE = "#";
-    int NO_CONFIG_PARAMETERS = 10;
+    int NUM_CONFIG_PARAMETERS = 10;
     double PACKET_DEVIATION_FACTOR = 0.4;
 
     String getDeviceName(int deviceId);
