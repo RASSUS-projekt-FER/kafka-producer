@@ -1,19 +1,19 @@
 package rassus.projekt.kafka;
 
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.streams.StreamsConfig;
 import rassus.projekt.kafka.util.DefaultMetricGenerator;
 import rassus.projekt.kafka.util.Metric;
 import rassus.projekt.kafka.util.MetricGenerator;
 
-import java.util.Properties;
-import java.util.Scanner;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
-import static rassus.projekt.kafka.util.Util.CPU_USAGE_TOPIC;
-import static rassus.projekt.kafka.util.Util.fillProperties;
+import static rassus.projekt.kafka.util.Util.*;
 
 /**
  * Ovaj razred simulira uređaj u mreži. Pri pokretanju iz naredbenog retka uzima id iz liste argumenata
@@ -28,7 +28,7 @@ public class Device {
      * Vremenski interval nakon kojeg se generiraju nove metrike.
      */
     private static final long METRIC_INTERVAL_MILLIS = 5000;
-    private static final Properties PRODUCER_PROPERTIES = fillProperties();
+//    private static final Properties PRODUCER_PROPERTIES = fillProperties();
     /**
      * Generator metrika
      */
@@ -41,6 +41,7 @@ public class Device {
      * Timer za periodično generiranje metrika
      */
     private Timer metricTimer = new Timer(true);
+    private boolean notTopics = true;
 
     /**
      * Konstruktor.
@@ -114,21 +115,47 @@ public class Device {
                     generator.generateTCPTraffic(id),
                     generator.generateUDPTraffic(id));
             System.out.println(metric);
-            sendMetricToCluster(metric);
+            try {
+                sendMetricToCluster(metric);
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
-        private void sendMetricToCluster(Metric metric) {
+        private void sendMetricToCluster(Metric metric) throws ExecutionException, InterruptedException {
             //todo ovo testirati
             String name = metric.getName();
-            Producer<String, Integer> producer = new KafkaProducer<>(PRODUCER_PROPERTIES);
+            Properties properties = fillProperties();
+            properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "streams-" + name);
+
+            if (notTopics) {
+                createTopics(properties);
+            }
+            Producer<String, Integer> producer = new KafkaProducer<>(properties);
             producer.send(new ProducerRecord<>(CPU_USAGE_TOPIC, name, metric.getCpu()));
-//            producer.send(new ProducerRecord<>(RAM_USAGE_TOPIC, name, metric.getRam()));
-//            producer.send(new ProducerRecord<>(TCP_SENT_TOPIC, name, metric.getTcpSent()));
-//            producer.send(new ProducerRecord<>(TCP_RECEIVED_TOPIC, name, metric.getTcpReceived()));
-//            producer.send(new ProducerRecord<>(UDP_SENT_TOPIC, name, metric.getUdpSent()));
-//            producer.send(new ProducerRecord<>(UDP_RECEIVED_TOPIC, name, metric.getUdpReceived()));
+            producer.send(new ProducerRecord<>(RAM_USAGE_TOPIC, name, metric.getRam()));
+            producer.send(new ProducerRecord<>(TCP_SENT_TOPIC, name, metric.getTcpSent()));
+            producer.send(new ProducerRecord<>(TCP_RECEIVED_TOPIC, name, metric.getTcpReceived()));
+            producer.send(new ProducerRecord<>(UDP_SENT_TOPIC, name, metric.getUdpSent()));
+            producer.send(new ProducerRecord<>(UDP_RECEIVED_TOPIC, name, metric.getUdpReceived()));
 
             System.out.println("Podaci poslani na klaster...");
+        }
+
+        private void createTopics(Properties properties) throws ExecutionException, InterruptedException {
+            AdminClient client = AdminClient.create(properties);
+
+            Set<String> topics = client.listTopics().names().get();
+            List<NewTopic> newTopics = new LinkedList<>();
+            for (String t : KAFKA_TOPICS) {
+                if (!topics.contains(t)) {
+                    newTopics.add(new NewTopic(t, DEFAULT_PARTITIONS, DEFAULT_REPLICATION_FACTOR));
+                }
+            }
+            if (!newTopics.isEmpty()) {
+                client.createTopics(newTopics);
+            }
+            notTopics = false;
         }
     }
 }
