@@ -114,6 +114,7 @@ public class Device {
                     generator.generateMemoryUsage(id),
                     generator.generateTCPTraffic(id),
                     generator.generateUDPTraffic(id));
+
             System.out.println(metric);
             try {
                 sendMetricToCluster(metric);
@@ -139,6 +140,7 @@ public class Device {
             producer.send(new ProducerRecord<>(UDP_SENT_TOPIC, name, metric.getUdpSent()));
             producer.send(new ProducerRecord<>(UDP_RECEIVED_TOPIC, name, metric.getUdpReceived()));
 
+            producer.close();
             System.out.println("Podaci poslani na klaster...");
         }
 

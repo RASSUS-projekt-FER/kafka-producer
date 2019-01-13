@@ -1,7 +1,6 @@
 package rassus.projekt.kafka.util;
 
 import org.apache.kafka.common.serialization.IntegerSerializer;
-import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -35,10 +34,10 @@ public class Util {
     public static Properties fillProperties() {
         Properties properties = new Properties();
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER_ADDRESS);
-        properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
-        properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
-        properties.put(KAFKA_KEY_SERIALIZER_CONFIG, StringSerializer.class);
-        properties.put(KAFKA_VALUE_SERIALIZER_CONFIG, IntegerSerializer.class);
+//        properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+//        properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
+        properties.put(KAFKA_KEY_SERIALIZER_CONFIG, StringSerializer.class.getName());
+        properties.put(KAFKA_VALUE_SERIALIZER_CONFIG, IntegerSerializer.class.getName());
 
 
         return properties;
