@@ -12,6 +12,7 @@ import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static rassus.projekt.kafka.util.Util.CPU_USAGE_TOPIC;
 import static rassus.projekt.kafka.util.Util.fillProperties;
 
 /**
@@ -31,7 +32,7 @@ public class Device {
     /**
      * Generator metrika
      */
-    private final MetricGenerator generator = new DefaultMetricGenerator(); //TODO: privatna implementacija ili generalna
+    private final MetricGenerator generator = new DefaultMetricGenerator();
     /**
      * Id uređaja iz konfiguracije
      */
@@ -91,7 +92,6 @@ public class Device {
     private void run() {
         Scanner sc = new Scanner(System.in);
         metricTimer.scheduleAtFixedRate(new MetricTask(), METRIC_INTERVAL_MILLIS, METRIC_INTERVAL_MILLIS);
-//        Producer<Integer, Integer> p = new KafkaProducer(null);
         //todo: u scheduled task poslati metrike na zasebne teme
         while (sc.hasNext()) {
             String cmd = sc.nextLine();
@@ -108,18 +108,27 @@ public class Device {
 
         @Override
         public void run() {
-            //todo: metoda zasad samo ispisuje generirane metrike, ovdje treba slati na raspodijeljene teme u kafki
             System.out.println("Generiram podatke...");
             Metric metric = new Metric(generator.getDeviceName(id), generator.generateCPUUsage(id),
                     generator.generateMemoryUsage(id),
                     generator.generateTCPTraffic(id),
                     generator.generateUDPTraffic(id));
             System.out.println(metric);
+            sendMetricToCluster(metric);
+        }
 
+        private void sendMetricToCluster(Metric metric) {
             //todo ovo testirati
-            Producer<String, Integer> cpuProducer = new KafkaProducer<>(PRODUCER_PROPERTIES);
-            cpuProducer.send(new ProducerRecord<>("cpu", metric.getName(), metric.getCpu()));
+            String name = metric.getName();
+            Producer<String, Integer> producer = new KafkaProducer<>(PRODUCER_PROPERTIES);
+            producer.send(new ProducerRecord<>(CPU_USAGE_TOPIC, name, metric.getCpu()));
+//            producer.send(new ProducerRecord<>(RAM_USAGE_TOPIC, name, metric.getRam()));
+//            producer.send(new ProducerRecord<>(TCP_SENT_TOPIC, name, metric.getTcpSent()));
+//            producer.send(new ProducerRecord<>(TCP_RECEIVED_TOPIC, name, metric.getTcpReceived()));
+//            producer.send(new ProducerRecord<>(UDP_SENT_TOPIC, name, metric.getUdpSent()));
+//            producer.send(new ProducerRecord<>(UDP_RECEIVED_TOPIC, name, metric.getUdpReceived()));
 
+            System.out.println("Podaci poslani na klaster...");
         }
     }
 }

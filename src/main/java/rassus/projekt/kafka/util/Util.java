@@ -11,6 +11,12 @@ import java.util.concurrent.CountDownLatch;
 
 public class Util {
     private static final String KAFKA_CLUSTER_ADDRESS = "localhost:9092";
+    public static final String CPU_USAGE_TOPIC = "cpu";
+    public static final String RAM_USAGE_TOPIC = "ram";
+    public static final String TCP_SENT_TOPIC = "tcp-sent";
+    public static final String TCP_RECEIVED_TOPIC = "tcp-received";
+    public static final String UDP_SENT_TOPIC = "udp-sent";
+    public static final String UDP_RECEIVED_TOPIC = "udp-received";
 
     public static Properties fillProperties() {
         Properties properties = new Properties();
