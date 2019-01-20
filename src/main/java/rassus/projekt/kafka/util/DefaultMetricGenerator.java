@@ -8,9 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import static java.lang.StrictMath.round;
-import static java.lang.StrictMath.toIntExact;
-
 /**
  * Implementacija sučelja {@linkplain MetricGenerator}. Za generiranje nasumičnih vrijednosti
  * koristit će se normalna (Gaussova) razdioba i njena implementacija u {@link java.util.Random}.
@@ -64,6 +61,7 @@ public class DefaultMetricGenerator implements MetricGenerator {
      * Vraća {@link Config} objekt za primljeni id, ako postoji.
      *
      * @param deviceId id uređaja
+     *
      * @return Config uređaja
      */
     private static Config getConfigForId(int deviceId) {
@@ -81,39 +79,35 @@ public class DefaultMetricGenerator implements MetricGenerator {
     }
 
     @Override
-    public int generateCPUUsage(int deviceId) {
+    public double generateCPUUsage(int deviceId) {
         Config c = getConfigForId(deviceId);
-        return toIntExact(round(RANDOM.nextGaussian() * c.getCpuSpike() + c.getAvgCpu()));
+        return RANDOM.nextGaussian() * c.getCpuSpike() + c.getAvgCpu();
     }
 
     @Override
-    public int generateMemoryUsage(int deviceId) {
+    public double generateMemoryUsage(int deviceId) {
         Config c = getConfigForId(deviceId);
-        return toIntExact(round(RANDOM.nextGaussian() * c.getRamSpike() + c.getAvgRam()));
+        return RANDOM.nextGaussian() * c.getRamSpike() + c.getAvgRam();
     }
 
     @Override
-    public int[] generateTCPTraffic(int deviceId) {
+    public double[] generateTCPTraffic(int deviceId) {
         Config c = getConfigForId(deviceId);
-        int sDeviation = (int) (PACKET_DEVIATION_FACTOR * c.getTcpSent());
-        int rDeviation = (int) (PACKET_DEVIATION_FACTOR * c.getTcpReceived());
-        return new int[]{
-                Math.toIntExact(round(RANDOM.nextGaussian() * sDeviation
-                        + c.getTcpSent())), //poslani paketi
-                Math.toIntExact(round(RANDOM.nextGaussian() * rDeviation
-                        + c.getTcpReceived()))}; //primljeni paketi
+        double sDeviation = PACKET_DEVIATION_FACTOR * c.getTcpSent();
+        double rDeviation = PACKET_DEVIATION_FACTOR * c.getTcpReceived();
+        return new double[]{
+                RANDOM.nextGaussian() * sDeviation + c.getTcpSent(), //poslani paketi
+                RANDOM.nextGaussian() * rDeviation + c.getTcpReceived()}; //primljeni paketi
     }
 
     @Override
-    public int[] generateUDPTraffic(int deviceId) {
+    public double[] generateUDPTraffic(int deviceId) {
         Config c = getConfigForId(deviceId);
-        int sDeviation = (int) (PACKET_DEVIATION_FACTOR * c.getTcpSent());
-        int rDeviation = (int) (PACKET_DEVIATION_FACTOR * c.getTcpReceived());
-        return new int[]{
-                Math.toIntExact(round(RANDOM.nextGaussian() * sDeviation
-                        + c.getUdpSent())), //poslani paketi
-                Math.toIntExact(round(RANDOM.nextGaussian() * rDeviation
-                        + c.getUdpReceived()))}; //primljeni paketi
+        double sDeviation = PACKET_DEVIATION_FACTOR * c.getTcpSent();
+        double rDeviation = PACKET_DEVIATION_FACTOR * c.getTcpReceived();
+        return new double[]{
+                RANDOM.nextGaussian() * sDeviation + c.getUdpSent(), //poslani paketi
+                RANDOM.nextGaussian() * rDeviation + c.getUdpReceived()}; //primljeni paketi
     }
 
     @Override

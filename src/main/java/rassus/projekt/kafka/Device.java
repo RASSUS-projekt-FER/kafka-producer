@@ -11,25 +11,10 @@ import rassus.projekt.kafka.util.DefaultMetricGenerator;
 import rassus.projekt.kafka.util.Metric;
 import rassus.projekt.kafka.util.MetricGenerator;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-import static rassus.projekt.kafka.util.Util.CPU_USAGE_TOPIC;
-import static rassus.projekt.kafka.util.Util.DEFAULT_PARTITIONS;
-import static rassus.projekt.kafka.util.Util.DEFAULT_REPLICATION_FACTOR;
-import static rassus.projekt.kafka.util.Util.KAFKA_TOPICS;
-import static rassus.projekt.kafka.util.Util.RAM_USAGE_TOPIC;
-import static rassus.projekt.kafka.util.Util.TCP_RECEIVED_TOPIC;
-import static rassus.projekt.kafka.util.Util.TCP_SENT_TOPIC;
-import static rassus.projekt.kafka.util.Util.UDP_RECEIVED_TOPIC;
-import static rassus.projekt.kafka.util.Util.UDP_SENT_TOPIC;
-import static rassus.projekt.kafka.util.Util.getProperties;
+import static rassus.projekt.kafka.util.Util.*;
 
 /**
  * Ovaj razred simulira uređaj u mreži. Pri pokretanju iz naredbenog retka uzima id iz liste argumenata
@@ -161,7 +146,7 @@ public class Device {
             if (!topicsCreated) {
                 createTopics(properties);
             }
-            Producer<String, Integer> producer = new KafkaProducer<>(properties);
+            Producer<String, Double> producer = new KafkaProducer<>(properties);
             producer.send(new ProducerRecord<>(CPU_USAGE_TOPIC, name, metric.getCpu()));
             producer.send(new ProducerRecord<>(RAM_USAGE_TOPIC, name, metric.getRam()));
             producer.send(new ProducerRecord<>(TCP_SENT_TOPIC, name, metric.getTcpSent()));

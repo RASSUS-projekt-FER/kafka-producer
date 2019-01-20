@@ -3,7 +3,7 @@ package rassus.projekt.kafka.consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.IntegerDeserializer;
+import org.apache.kafka.common.serialization.DoubleDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.streams.StreamsConfig;
 
@@ -19,13 +19,13 @@ public class TestConsumer {
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "streams-gejo");
         properties.put("group.id", "testni-consumer");
         properties.put("key.deserializer", StringDeserializer.class.getName());
-        properties.put("value.deserializer", IntegerDeserializer.class.getName());
+        properties.put("value.deserializer", DoubleDeserializer.class.getName());
 
-        KafkaConsumer<String, Integer> consumer = new KafkaConsumer<>(properties);
+        KafkaConsumer<String, Double> consumer = new KafkaConsumer<>(properties);
         consumer.subscribe(Collections.singletonList("cpu"));
         for (int i = 0; i < 5; i++) {
-            ConsumerRecords<String, Integer> records = consumer.poll(Duration.ofSeconds(1));
-            for (ConsumerRecord<String, Integer> c : records) {
+            ConsumerRecords<String, Double> records = consumer.poll(Duration.ofSeconds(1));
+            for (ConsumerRecord<String, Double> c : records) {
                 System.out.println(c.topic() + "," +
                         c.key() + ":" + c.value());
             }

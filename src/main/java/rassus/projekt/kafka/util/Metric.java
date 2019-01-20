@@ -2,14 +2,14 @@ package rassus.projekt.kafka.util;
 
 public class Metric {
     private String name;
-    private int cpu;
-    private int ram;
-    private int tcpSent;
-    private int tcpReceived;
-    private int udpSent;
-    private int udpReceived;
+    private double cpu;
+    private double ram;
+    private double tcpSent;
+    private double tcpReceived;
+    private double udpSent;
+    private double udpReceived;
 
-    public Metric(String name, int cpu, int ram, int[] tcp, int[] udp) {
+    public Metric(String name, double cpu, double ram, double[] tcp, double[] udp) {
         this.name = name;
         this.cpu = cpu;
         this.ram = ram;
@@ -23,27 +23,27 @@ public class Metric {
         return name;
     }
 
-    public int getCpu() {
+    public double getCpu() {
         return cpu;
     }
 
-    public int getRam() {
+    public double getRam() {
         return ram;
     }
 
-    public int getTcpSent() {
+    public double getTcpSent() {
         return tcpSent;
     }
 
-    public int getTcpReceived() {
+    public double getTcpReceived() {
         return tcpReceived;
     }
 
-    public int getUdpSent() {
+    public double getUdpSent() {
         return udpSent;
     }
 
-    public int getUdpReceived() {
+    public double getUdpReceived() {
         return udpReceived;
     }
 

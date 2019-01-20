@@ -23,7 +23,7 @@ public interface MetricGenerator {
      *
      * @return cpu usage
      */
-    int generateCPUUsage(int deviceId);
+    double generateCPUUsage(int deviceId);
 
     /**
      * Vraća Memory usage
@@ -32,7 +32,7 @@ public interface MetricGenerator {
      *
      * @return memory usage
      */
-    int generateMemoryUsage(int deviceId);
+    double generateMemoryUsage(int deviceId);
 
 //    /**
 //     * Vraća broj aktivnih veza.
@@ -50,7 +50,7 @@ public interface MetricGenerator {
      *
      * @return TCP poslano, primljeno
      */
-    int[] generateTCPTraffic(int deviceId);
+    double[] generateTCPTraffic(int deviceId);
 
     /**
      * vraća uređeni par (poslanih,primljenih) UDP paketa.
@@ -59,12 +59,11 @@ public interface MetricGenerator {
      *
      * @return UDP poslano, primljeno
      */
-    int[] generateUDPTraffic(int deviceId);
+    double[] generateUDPTraffic(int deviceId);
 
     /**
      * @return number of registered  devices registered in a network
      */
     int getNumberOfNodes();
 
-    //TODO: dopuniti
 }
