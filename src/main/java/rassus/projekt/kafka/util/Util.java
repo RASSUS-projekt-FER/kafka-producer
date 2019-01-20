@@ -1,5 +1,6 @@
 package rassus.projekt.kafka.util;
 
+import org.apache.kafka.common.serialization.DoubleSerializer;
 import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.KafkaStreams;
@@ -42,7 +43,7 @@ public class Util {
         Properties properties = new Properties();
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER_ADDRESS);
         properties.put(KAFKA_KEY_SERIALIZER_CONFIG, StringSerializer.class.getName());
-        properties.put(KAFKA_VALUE_SERIALIZER_CONFIG, IntegerSerializer.class.getName());
+        properties.put(KAFKA_VALUE_SERIALIZER_CONFIG, DoubleSerializer.class.getName());
 
         return properties;
     }
