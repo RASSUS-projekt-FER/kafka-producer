@@ -1,4 +1,4 @@
-package rassus.projekt.kafka.util;
+package rassus.projekt.kafka.model;
 
 import java.util.Objects;
 

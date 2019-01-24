@@ -1,4 +1,4 @@
-package rassus.projekt.kafka.util;
+package rassus.projekt.kafka.generator;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

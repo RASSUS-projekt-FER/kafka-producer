@@ -1,4 +1,4 @@
-package rassus.projekt.kafka.util;
+package rassus.projekt.kafka.model;
 
 public class Metric {
     private String name;

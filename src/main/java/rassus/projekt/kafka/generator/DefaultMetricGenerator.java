@@ -1,6 +1,7 @@
-package rassus.projekt.kafka.util;
+package rassus.projekt.kafka.generator;
 
 import lombok.extern.log4j.Log4j2;
+import rassus.projekt.kafka.model.Config;
 
 import java.io.IOException;
 import java.nio.file.Files;
